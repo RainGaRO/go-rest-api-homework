@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -54,7 +55,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := json.Marshal(task)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -62,7 +63,12 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
+	_, err = w.Write(resp)
+
+	if err != nil {
+		log.Println(err.Error())
+	}
+
 }
 
 func getTasks(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +82,11 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
+	_, err = w.Write(resp)
+
+	if err != nil {
+		log.Println(err.Error())
+	}
 }
 
 func postTask(w http.ResponseWriter, r *http.Request) {
@@ -89,14 +99,14 @@ func postTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = json.Unmarshal(buf.Bytes(), &tasks); err != nil {
+	if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	tasks[task.ID] = task
 
-	fmt.Printf("%d Created\n", http.StatusOK)
+	fmt.Printf("%d Created\n", http.StatusCreated)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
